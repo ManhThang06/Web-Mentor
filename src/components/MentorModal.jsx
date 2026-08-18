@@ -1,0 +1,163 @@
+import { useState, useRef } from 'react';
+
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23e2e8f0'/%3E%3Ccircle cx='40' cy='32' r='14' fill='%2394a3b8'/%3E%3Cellipse cx='40' cy='68' rx='22' ry='14' fill='%2394a3b8'/%3E%3C/svg%3E";
+
+export default function MentorModal({ mentor, onSave, onClose }) {
+  const isEdit = !!mentor;
+  const fileRef = useRef(null);
+
+  const [form, setForm] = useState({
+    nickname: mentor?.nickname || '',
+    major: mentor?.major || '',
+    track: mentor?.track || '',
+    hobbies: mentor?.hobbies || '',
+    maxSlots: mentor?.maxSlots || 5,
+    avatar: mentor?.avatar || '',
+  });
+  const [preview, setPreview] = useState(mentor?.avatar || '');
+  const [errors, setErrors] = useState({});
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setPreview(ev.target.result);
+      setForm((f) => ({ ...f, avatar: ev.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const TRACK_OPTIONS = [
+    'Mạng máy tính',
+    'Lập trình ứng dụng',
+    'Giải thuật & lập trình',
+  ];
+
+  const validate = () => {
+    const errs = {};
+    if (!form.nickname.trim()) errs.nickname = 'Vui lòng nhập biệt danh.';
+    if (!form.major.trim())    errs.major    = 'Vui lòng nhập ngành học.';
+    if (!form.track)           errs.track    = 'Vui lòng chọn nhánh.';
+    if (!form.hobbies.trim())  errs.hobbies  = 'Vui lòng nhập sở thích.';
+    if (!form.maxSlots || form.maxSlots < 1) errs.maxSlots = 'Tối thiểu 1 slot.';
+    return errs;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    onSave({
+      id: mentor?.id || Date.now(),
+      ...form,
+      maxSlots: Number(form.maxSlots),
+      registrations: mentor?.registrations || [],
+    });
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{isEdit ? 'Chỉnh sửa Mentor' : 'Thêm Mentor mới'}</h3>
+          <button className="modal-close" onClick={onClose} aria-label="Đóng">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-body">
+          {/* Avatar */}
+          <div className="avatar-section">
+            <div className="avatar-preview" onClick={() => fileRef.current.click()}>
+              <img src={preview || DEFAULT_AVATAR} alt="avatar" />
+              <div className="avatar-overlay">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </div>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} id="avatar-upload" />
+            <label htmlFor="avatar-upload" className="avatar-hint">Nhấn để chọn ảnh đại diện</label>
+          </div>
+
+          {/* Nickname */}
+          <div className="mfield">
+            <label>Biệt danh <span className="required">*</span></label>
+            <input
+              type="text"
+              placeholder="Vd: Blue, Phoenix, NightOwl..."
+              value={form.nickname}
+              onChange={(e) => setForm((f) => ({ ...f, nickname: e.target.value }))}
+            />
+            {errors.nickname && <span className="merror">{errors.nickname}</span>}
+          </div>
+
+          {/* Major */}
+          <div className="mfield">
+            <label>Ngành học <span className="required">*</span></label>
+            <input
+              type="text"
+              placeholder="Vd: Công nghệ Thông tin, ATTT, KHMT..."
+              value={form.major}
+              onChange={(e) => setForm((f) => ({ ...f, major: e.target.value }))}
+            />
+            {errors.major && <span className="merror">{errors.major}</span>}
+          </div>
+
+          {/* Track / Nhánh */}
+          <div className="mfield">
+            <label>Nhánh <span className="required">*</span></label>
+            <select
+              value={form.track}
+              onChange={(e) => setForm((f) => ({ ...f, track: e.target.value }))}
+              className={errors.track ? 'input-error' : ''}
+            >
+              <option value="">-- Chọn nhánh --</option>
+              {TRACK_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+            {errors.track && <span className="merror">{errors.track}</span>}
+          </div>
+          
+
+          {/* Hobbies */}
+          <div className="mfield">
+            <label>Sở thích <span className="required">*</span></label>
+            <textarea
+              rows={3}
+              placeholder="Vd: Lập trình, Gaming, Âm nhạc, Đọc sách..."
+              value={form.hobbies}
+              onChange={(e) => setForm((f) => ({ ...f, hobbies: e.target.value }))}
+            />
+            {errors.hobbies && <span className="merror">{errors.hobbies}</span>}
+          </div>
+
+          {/* Max Slots */}
+          <div className="mfield">
+            <label>Số lượng tối đa đăng ký <span className="required">*</span></label>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={form.maxSlots}
+              onChange={(e) => setForm((f) => ({ ...f, maxSlots: e.target.value }))}
+            />
+            {errors.maxSlots && <span className="merror">{errors.maxSlots}</span>}
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="btn-cancel" onClick={onClose}>Huỷ</button>
+            <button type="submit" className="btn-save">
+              {isEdit ? 'Lưu thay đổi' : 'Thêm Mentor'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
