@@ -1,23 +1,34 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import pool from './db.js';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import pool from "./db.js";
+import exportRoutes from "./routes/export.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+
+app.use("/api/export", exportRoutes);
+
+app.get("/test", (req, res) => {
+  res.json({
+    status: "ok",
+    dbConnected: true,
+    message: "Server and Database are active.",
+  });
+});
 
 // 0. Welcome & Server Status page
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
     <div style="font-family: system-ui, sans-serif; padding: 40px; text-align: center; background: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
       <h1 style="color: #2563eb; margin-bottom: 10px;">🚀 Web_Mentor Backend API Server</h1>
@@ -33,144 +44,211 @@ app.get('/', (req, res) => {
 });
 
 // 1. Health check endpoint
-app.get('/api/health', async (req, res) => {
+app.get("/api/health", async (req, res) => {
   try {
-    await pool.query('SELECT 1 + 1 AS result');
-    res.json({ status: 'ok', dbConnected: true, message: 'Server and Database are active!' });
+    await pool.query("SELECT 1 + 1 AS result");
+    res.json({
+      status: "ok",
+      dbConnected: true,
+      message: "Server and Database are active!",
+    });
   } catch (error) {
-    res.status(500).json({ status: 'error', dbConnected: false, error: error.message });
+    res
+      .status(500)
+      .json({ status: "error", dbConnected: false, error: error.message });
   }
 });
 
 // 2. Auth Login API
-app.post('/api/auth/login', async (req, res) => {
+app.post("/api/auth/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ tài khoản và mật khẩu.' });
+    return res.status(400).json({
+      success: false,
+      message: "Vui lòng cung cấp đầy đủ tài khoản và mật khẩu.",
+    });
   }
 
   try {
     const [users] = await pool.query(
-      'SELECT id, name, username, role FROM users WHERE username = ? AND password = ?',
-      [username.trim(), password]
+      "SELECT id, name, username, role FROM users WHERE username = ? AND password = ?",
+      [username.trim(), password],
     );
 
     if (users.length > 0) {
       const user = users[0];
       return res.json({
         success: true,
-        user: { id: user.id, name: user.name || user.username, username: user.username, role: user.role }
+        user: {
+          id: user.id,
+          name: user.name || user.username,
+          username: user.username,
+          role: user.role,
+        },
       });
     }
 
-    return res.status(401).json({ success: false, message: 'Tài khoản hoặc mật khẩu không đúng.' });
+    return res
+      .status(401)
+      .json({ success: false, message: "Tài khoản hoặc mật khẩu không đúng." });
   } catch (error) {
-    console.error('Login error:', error.message);
-    return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi đăng nhập.', error: error.message });
+    console.error("Login error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi máy chủ khi đăng nhập.",
+      error: error.message,
+    });
   }
 });
 
 // 2.0. Change Password API (lưu thẳng vào database)
-app.put('/api/users/:id/password', async (req, res) => {
+app.put("/api/users/:id/password", async (req, res) => {
   const { id } = req.params;
   const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
-    return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới.' });
+    return res.status(400).json({
+      success: false,
+      message: "Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới.",
+    });
   }
 
   if (newPassword.length < 4) {
-    return res.status(400).json({ success: false, message: 'Mật khẩu mới phải có ít nhất 4 ký tự.' });
+    return res.status(400).json({
+      success: false,
+      message: "Mật khẩu mới phải có ít nhất 4 ký tự.",
+    });
   }
 
   try {
     // Verify current password
     const [users] = await pool.query(
-      'SELECT id FROM users WHERE id = ? AND password = ?',
-      [id, currentPassword]
+      "SELECT id FROM users WHERE id = ? AND password = ?",
+      [id, currentPassword],
     );
 
     if (users.length === 0) {
-      return res.status(401).json({ success: false, message: 'Mật khẩu hiện tại không đúng.' });
+      return res
+        .status(401)
+        .json({ success: false, message: "Mật khẩu hiện tại không đúng." });
     }
 
     // Update password in database
-    await pool.query(
-      'UPDATE users SET password = ? WHERE id = ?',
-      [newPassword, id]
-    );
+    await pool.query("UPDATE users SET password = ? WHERE id = ?", [
+      newPassword,
+      id,
+    ]);
 
-    return res.json({ success: true, message: 'Đổi mật khẩu thành công. Mật khẩu mới đã được lưu vào cơ sở dữ liệu.' });
+    return res.json({
+      success: true,
+      message:
+        "Đổi mật khẩu thành công. Mật khẩu mới đã được lưu vào cơ sở dữ liệu.",
+    });
   } catch (error) {
-    console.error('Change password error:', error.message);
-    return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi đổi mật khẩu.', error: error.message });
+    console.error("Change password error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi máy chủ khi đổi mật khẩu.",
+      error: error.message,
+    });
   }
 });
 
 // 2.1. Get All Users (Quản lý thành viên)
-app.get('/api/users', async (req, res) => {
+app.get("/api/users", async (req, res) => {
   try {
-    const [users] = await pool.query('SELECT id, name, username, password, role, created_at FROM users ORDER BY id DESC');
+    const [users] = await pool.query(
+      "SELECT id, name, username, password, role, created_at FROM users ORDER BY id DESC",
+    );
     res.json({ success: true, users });
   } catch (error) {
-    console.error('Get users error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách thành viên.', error: error.message });
+    console.error("Get users error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy danh sách thành viên.",
+      error: error.message,
+    });
   }
 });
 
 // 2.2. Create or Update User
-app.post('/api/users', async (req, res) => {
+app.post("/api/users", async (req, res) => {
   const { id, name, username, password, role } = req.body;
 
   if (!username || !password || !name) {
-    return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ Họ tên, MSSV (Tài khoản) và Mật khẩu.' });
+    return res.status(400).json({
+      success: false,
+      message: "Vui lòng điền đầy đủ Họ tên, MSSV (Tài khoản) và Mật khẩu.",
+    });
   }
 
   try {
     if (id) {
       // Update
       await pool.query(
-        'UPDATE users SET name = ?, username = ?, password = ?, role = ? WHERE id = ?',
-        [name.trim(), username.trim(), password, role || 'user', id]
+        "UPDATE users SET name = ?, username = ?, password = ?, role = ? WHERE id = ?",
+        [name.trim(), username.trim(), password, role || "user", id],
       );
-      res.json({ success: true, message: 'Đã cập nhật thông tin thành viên.' });
+      res.json({ success: true, message: "Đã cập nhật thông tin thành viên." });
     } else {
       // Insert
-      const [existing] = await pool.query('SELECT id FROM users WHERE username = ?', [username.trim()]);
+      const [existing] = await pool.query(
+        "SELECT id FROM users WHERE username = ?",
+        [username.trim()],
+      );
       if (existing.length > 0) {
-        return res.status(400).json({ success: false, message: `Tài khoản MSSV ${username.trim()} đã tồn tại trong hệ thống.` });
+        return res.status(400).json({
+          success: false,
+          message: `Tài khoản MSSV ${username.trim()} đã tồn tại trong hệ thống.`,
+        });
       }
       const [result] = await pool.query(
-        'INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)',
-        [name.trim(), username.trim(), password, role || 'user']
+        "INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)",
+        [name.trim(), username.trim(), password, role || "user"],
       );
-      res.json({ success: true, userId: result.insertId, message: 'Thêm thành viên mới thành công.' });
+      res.json({
+        success: true,
+        userId: result.insertId,
+        message: "Thêm thành viên mới thành công.",
+      });
     }
   } catch (error) {
-    console.error('Save user error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi khi lưu thông tin thành viên.', error: error.message });
+    console.error("Save user error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lưu thông tin thành viên.",
+      error: error.message,
+    });
   }
 });
 
 // 2.3. Delete User
-app.delete('/api/users/:id', async (req, res) => {
+app.delete("/api/users/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    await pool.query('DELETE FROM users WHERE id = ?', [id]);
-    res.json({ success: true, message: 'Đã xoá thành viên thành công.' });
+    await pool.query("DELETE FROM users WHERE id = ?", [id]);
+    res.json({ success: true, message: "Đã xoá thành viên thành công." });
   } catch (error) {
-    console.error('Delete user error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi khi xoá thành viên.', error: error.message });
+    console.error("Delete user error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi xoá thành viên.",
+      error: error.message,
+    });
   }
 });
 
 // 3. Get All Mentors (with Registrations) API
-app.get('/api/mentors', async (req, res) => {
+app.get("/api/mentors", async (req, res) => {
   try {
-    const [mentors] = await pool.query('SELECT * FROM mentors ORDER BY created_at DESC');
-    const [registrations] = await pool.query('SELECT * FROM registrations ORDER BY created_at ASC');
+    const [mentors] = await pool.query(
+      "SELECT * FROM mentors ORDER BY created_at DESC",
+    );
+    const [registrations] = await pool.query(
+      "SELECT * FROM registrations ORDER BY created_at ASC",
+    );
 
     const result = mentors.map((m) => {
       const regs = registrations
@@ -179,100 +257,142 @@ app.get('/api/mentors', async (req, res) => {
           id: r.id,
           menteeName: r.mentee_name,
           menteeId: r.mentee_id,
-          registeredAt: r.registered_at
+          registeredAt: r.registered_at,
         }));
 
       return {
         id: m.id,
         nickname: m.nickname,
         major: m.major,
-        track: m.track || 'Lập trình ứng dụng',
+        track: m.track || "Lập trình ứng dụng",
         hobbies: m.hobbies,
         maxSlots: m.max_slots,
         avatar: m.avatar,
         facebookUrl: m.facebook_url,
-        registrations: regs
+        registrations: regs,
       };
     });
 
     res.json({ success: true, mentors: result });
   } catch (error) {
-    console.error('Get mentors error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi truy vấn cơ sở dữ liệu.', error: error.message });
+    console.error("Get mentors error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi truy vấn cơ sở dữ liệu.",
+      error: error.message,
+    });
   }
 });
 
 // 4. Create or Update Mentor API
-app.post('/api/mentors', async (req, res) => {
-  const { id, nickname, major, track, hobbies, maxSlots, avatar, facebookUrl } = req.body;
+app.post("/api/mentors", async (req, res) => {
+  const { id, nickname, major, track, hobbies, maxSlots, avatar, facebookUrl } =
+    req.body;
 
   if (!nickname || !major) {
-    return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc (nickname, major).' });
+    return res.status(400).json({
+      success: false,
+      message: "Thiếu thông tin bắt buộc (nickname, major).",
+    });
   }
 
   const mentorId = id || `m-${Date.now()}`;
 
   try {
-    const [existing] = await pool.query('SELECT id FROM mentors WHERE id = ?', [mentorId]);
+    const [existing] = await pool.query("SELECT id FROM mentors WHERE id = ?", [
+      mentorId,
+    ]);
 
     if (existing.length > 0) {
       // Update
       await pool.query(
-        `UPDATE mentors 
+        `UPDATE mentors
          SET nickname = ?, major = ?, track = ?, hobbies = ?, max_slots = ?, avatar = ?, facebook_url = ?
          WHERE id = ?`,
-        [nickname, major, track || 'Lập trình ứng dụng', hobbies || '', maxSlots || 5, avatar || '', facebookUrl || '', mentorId]
+        [
+          nickname,
+          major,
+          track || "Lập trình ứng dụng",
+          hobbies || "",
+          maxSlots || 5,
+          avatar || "",
+          facebookUrl || "",
+          mentorId,
+        ],
       );
     } else {
       // Insert
       await pool.query(
         `INSERT INTO mentors (id, nickname, major, track, hobbies, max_slots, avatar, facebook_url)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [mentorId, nickname, major, track || 'Lập trình ứng dụng', hobbies || '', maxSlots || 5, avatar || '', facebookUrl || '']
+        [
+          mentorId,
+          nickname,
+          major,
+          track || "Lập trình ứng dụng",
+          hobbies || "",
+          maxSlots || 5,
+          avatar || "",
+          facebookUrl || "",
+        ],
       );
     }
 
     res.json({ success: true, mentorId });
   } catch (error) {
-    console.error('Save mentor error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi khi lưu mentor vào MySQL.', error: error.message });
+    console.error("Save mentor error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lưu mentor vào MySQL.",
+      error: error.message,
+    });
   }
 });
 
 // 5. Delete Mentor API
-app.delete('/api/mentors/:id', async (req, res) => {
+app.delete("/api/mentors/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    await pool.query('DELETE FROM mentors WHERE id = ?', [id]);
-    res.json({ success: true, message: 'Đã xoá mentor thành công.' });
+    await pool.query("DELETE FROM mentors WHERE id = ?", [id]);
+    res.json({ success: true, message: "Đã xoá mentor thành công." });
   } catch (error) {
-    console.error('Delete mentor error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi khi xoá mentor.', error: error.message });
+    console.error("Delete mentor error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi xoá mentor.",
+      error: error.message,
+    });
   }
 });
 
 // 6. Register Mentee API
-app.post('/api/mentors/:id/register', async (req, res) => {
+app.post("/api/mentors/:id/register", async (req, res) => {
   const { id } = req.params;
   const { menteeName, menteeId } = req.body;
 
   if (!menteeName || !menteeId) {
-    return res.status(400).json({ success: false, message: 'Vui lòng cung cấp Họ tên và MSSV.' });
+    return res
+      .status(400)
+      .json({ success: false, message: "Vui lòng cung cấp Họ tên và MSSV." });
   }
 
   try {
-    const nowStr = new Date().toLocaleString('vi-VN');
+    const nowStr = new Date().toLocaleString("vi-VN");
     await pool.query(
       `INSERT INTO registrations (mentor_id, mentee_name, mentee_id, registered_at)
        VALUES (?, ?, ?, ?)`,
-      [id, menteeName, menteeId, nowStr]
+      [id, menteeName, menteeId, nowStr],
     );
 
-    res.json({ success: true, message: 'Đăng ký mentor thành công.' });
+    res.json({ success: true, message: "Đăng ký mentor thành công." });
   } catch (error) {
-    console.error('Register mentee error:', error.message);
-    res.status(500).json({ success: false, message: 'Lỗi khi lưu đăng ký vào MySQL.', error: error.message });
+    console.error("Register mentee error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lưu đăng ký vào MySQL.",
+      error: error.message,
+    });
   }
 });
 
