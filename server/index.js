@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
 import pool from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -52,16 +53,19 @@ app.post('/api/auth/login', async (req, res) => {
 
   try {
     const [users] = await pool.query(
-      'SELECT id, name, username, role FROM users WHERE username = ? AND password = ?',
-      [username.trim(), password]
+      'SELECT id, name, username, password, role FROM users WHERE username = ?',
+      [username.trim()]
     );
 
     if (users.length > 0) {
       const user = users[0];
-      return res.json({
-        success: true,
-        user: { id: user.id, name: user.name || user.username, username: user.username, role: user.role }
-      });
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        return res.json({
+          success: true,
+          user: { id: user.id, name: user.name || user.username, username: user.username, role: user.role }
+        });
+      }
     }
 
     return res.status(401).json({ success: false, message: 'Tài khoản hoặc mật khẩu không đúng.' });
@@ -87,18 +91,26 @@ app.put('/api/users/:id/password', async (req, res) => {
   try {
     // Verify current password
     const [users] = await pool.query(
-      'SELECT id FROM users WHERE id = ? AND password = ?',
-      [id, currentPassword]
+      'SELECT id, password FROM users WHERE id = ?',
+      [id]
     );
 
     if (users.length === 0) {
       return res.status(401).json({ success: false, message: 'Mật khẩu hiện tại không đúng.' });
     }
 
+    const isMatch = await bcrypt.compare(currentPassword, users[0].password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Mật khẩu hiện tại không đúng.' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
     // Update password in database
     await pool.query(
       'UPDATE users SET password = ? WHERE id = ?',
-      [newPassword, id]
+      [hashedPassword, id]
     );
 
     return res.json({ success: true, message: 'Đổi mật khẩu thành công. Mật khẩu mới đã được lưu vào cơ sở dữ liệu.' });
@@ -123,16 +135,33 @@ app.get('/api/users', async (req, res) => {
 app.post('/api/users', async (req, res) => {
   const { id, name, username, password, role } = req.body;
 
-  if (!username || !password || !name) {
-    return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ Họ tên, MSSV (Tài khoản) và Mật khẩu.' });
+  if (!username || !name) {
+    return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ Họ tên và MSSV (Tài khoản).' });
   }
 
   try {
     if (id) {
+      // Fetch the user's existing password from the database
+      const [users] = await pool.query('SELECT password FROM users WHERE id = ?', [id]);
+      let passwordToSave;
+      if (users.length > 0) {
+        const existingPasswordHash = users[0].password;
+        // If password is provided and different from existing hash, hash it. Otherwise keep existing hash.
+        if (password && password !== existingPasswordHash) {
+          passwordToSave = await bcrypt.hash(password, 10);
+        } else {
+          passwordToSave = existingPasswordHash;
+        }
+      } else {
+        // Fallback if user doesn't exist yet but ID is provided
+        const plainPassword = password || username.trim();
+        passwordToSave = await bcrypt.hash(plainPassword, 10);
+      }
+
       // Update
       await pool.query(
         'UPDATE users SET name = ?, username = ?, password = ?, role = ? WHERE id = ?',
-        [name.trim(), username.trim(), password, role || 'user', id]
+        [name.trim(), username.trim(), passwordToSave, role || 'user', id]
       );
       res.json({ success: true, message: 'Đã cập nhật thông tin thành viên.' });
     } else {
@@ -141,9 +170,14 @@ app.post('/api/users', async (req, res) => {
       if (existing.length > 0) {
         return res.status(400).json({ success: false, message: `Tài khoản MSSV ${username.trim()} đã tồn tại trong hệ thống.` });
       }
+
+      // Default password to username (MSSV) if not provided
+      const plainPassword = password || username.trim();
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
       const [result] = await pool.query(
         'INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)',
-        [name.trim(), username.trim(), password, role || 'user']
+        [name.trim(), username.trim(), hashedPassword, role || 'user']
       );
       res.json({ success: true, userId: result.insertId, message: 'Thêm thành viên mới thành công.' });
     }
@@ -185,6 +219,7 @@ app.get('/api/mentors', async (req, res) => {
       return {
         id: m.id,
         nickname: m.nickname,
+        mssv: m.mssv || '',
         major: m.major,
         track: m.track || 'Lập trình ứng dụng',
         hobbies: m.hobbies,
@@ -204,7 +239,7 @@ app.get('/api/mentors', async (req, res) => {
 
 // 4. Create or Update Mentor API
 app.post('/api/mentors', async (req, res) => {
-  const { id, nickname, major, track, hobbies, maxSlots, avatar, facebookUrl } = req.body;
+  const { id, nickname, mssv, major, track, hobbies, maxSlots, avatar, facebookUrl } = req.body;
 
   if (!nickname || !major) {
     return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc (nickname, major).' });
@@ -219,16 +254,16 @@ app.post('/api/mentors', async (req, res) => {
       // Update
       await pool.query(
         `UPDATE mentors 
-         SET nickname = ?, major = ?, track = ?, hobbies = ?, max_slots = ?, avatar = ?, facebook_url = ?
+         SET nickname = ?, mssv = ?, major = ?, track = ?, hobbies = ?, max_slots = ?, avatar = ?, facebook_url = ?
          WHERE id = ?`,
-        [nickname, major, track || 'Lập trình ứng dụng', hobbies || '', maxSlots || 5, avatar || '', facebookUrl || '', mentorId]
+        [nickname, mssv || '', major, track || 'Lập trình ứng dụng', hobbies || '', maxSlots || 5, avatar || '', facebookUrl || '', mentorId]
       );
     } else {
       // Insert
       await pool.query(
-        `INSERT INTO mentors (id, nickname, major, track, hobbies, max_slots, avatar, facebook_url)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [mentorId, nickname, major, track || 'Lập trình ứng dụng', hobbies || '', maxSlots || 5, avatar || '', facebookUrl || '']
+        `INSERT INTO mentors (id, nickname, mssv, major, track, hobbies, max_slots, avatar, facebook_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [mentorId, nickname, mssv || '', major, track || 'Lập trình ứng dụng', hobbies || '', maxSlots || 5, avatar || '', facebookUrl || '']
       );
     }
 
@@ -275,6 +310,19 @@ app.post('/api/mentors/:id/register', async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi khi lưu đăng ký vào MySQL.', error: error.message });
   }
 });
+
+// 7. Delete Registration (xoá đăng ký của một mentee)
+app.delete('/api/registrations/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM registrations WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Đã xoá đăng ký thành công.' });
+  } catch (error) {
+    console.error('Delete registration error:', error.message);
+    res.status(500).json({ success: false, message: 'Lỗi khi xoá đăng ký.', error: error.message });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Express server running on http://localhost:${PORT}`);

@@ -196,5 +196,15 @@ export const api = {
       localStorage.setItem('icon_users', JSON.stringify(updated));
       return { success: true, localOnly: true };
     }
+  },
+
+  // 9. Delete Registration (xoá đăng ký của mentee)
+  async deleteRegistration(registrationId) {
+    const res = await fetch(`${API_BASE_URL}/registrations/${registrationId}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Xoá đăng ký thất bại.');
+    return data;
   }
 };

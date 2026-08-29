@@ -19,10 +19,11 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS mentors (
     id VARCHAR(50) PRIMARY KEY,
     nickname VARCHAR(100) NOT NULL,
+    mssv VARCHAR(50),
     major VARCHAR(100) NOT NULL,
     track VARCHAR(100) NOT NULL DEFAULT 'Lập trình ứng dụng',
     hobbies TEXT,
-    max_slots INT NOT NULL DEFAULT 5,
+    max_slots INT NOT NULL DEFAULT 10,
     avatar LONGTEXT,
     facebook_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -46,9 +47,9 @@ CREATE TABLE IF NOT EXISTS registrations (
 -- Chèn tài khoản Admin mặc định & Thành viên mẫu
 INSERT INTO users (name, username, password, role)
 VALUES 
-('Nguyễn Mạnh Thắng', '52400036', 'Admin3237', 'admin'),
-('Trần Thị Minh Anh', '52000123', '123456', 'user'),
-('Lê Văn Nam', '52000456', 'password123', 'user')
+('Nguyễn Mạnh Thắng', '52400036', '$2b$10$a64yuRl4JQH/mtYUD0kVne1IzxgRPo/4O.eKWnoDXoTkhGdvwoi8K', 'admin'),
+('Trần Thị Minh Anh', '52000123', '$2b$10$PRN7QLU9KuWAUnsenbQIO./giGl1ZbIYJ0GUhEcz1lHIEkOFymuqa', 'user'),
+('Lê Văn Nam', '52000456', '$2b$10$benlsfEWpEZOUzId6zbx2utKEuzbZcm56EtJ0wWzeYgju/87YgARG', 'user')
 ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = VALUES(role);
 
 -- Chèn Mentor mẫu

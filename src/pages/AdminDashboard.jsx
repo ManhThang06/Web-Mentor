@@ -134,8 +134,11 @@ export default function AdminDashboard({ user, onLogout }) {
   /* ── Export Excel ── */
   const exportExcel = () => {
     const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Danh sách Mentor (thêm cột MSSV sau STT)
     const mentorRows = mentors.map((m, idx) => ({
       STT: idx + 1,
+      'MSSV': m.mssv || '—',
       'Biệt danh': m.nickname,
       'Ngành học': m.major,
       'Nhánh': m.track || '—',
@@ -145,22 +148,24 @@ export default function AdminDashboard({ user, onLogout }) {
       'Còn lại': m.maxSlots - (m.registrations || []).length,
     }));
     const ws1 = XLSX.utils.json_to_sheet(mentorRows);
-    ws1['!cols'] = [{ wch: 5 }, { wch: 18 }, { wch: 22 }, { wch: 24 }, { wch: 30 }, { wch: 16 }, { wch: 14 }, { wch: 10 }];
+    ws1['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 24 }, { wch: 30 }, { wch: 16 }, { wch: 14 }, { wch: 10 }];
     XLSX.utils.book_append_sheet(wb, ws1, 'Danh sách Mentor');
 
+    // Sheet 2: Chi tiết đăng ký (MSSV Mentor → Biệt Danh Mentor → MSSV Mentee → Tên Mentee → Thời gian)
     const regRows = [];
     mentors.forEach((m) => {
       (m.registrations || []).forEach((r) => {
         regRows.push({
-          'Tên Mentor (biệt danh)': m.nickname,
-          'Tên Mentee': r.menteeName,
+          'MSSV Mentor': m.mssv || '—',
+          'Biệt Danh Mentor': m.nickname,
           'MSSV Mentee': r.menteeId || '',
+          'Tên Mentee': r.menteeName,
           'Thời gian đăng ký': r.registeredAt || '',
         });
       });
     });
     const ws2 = XLSX.utils.json_to_sheet(regRows.length ? regRows : [{ 'Ghi chú': 'Chưa có đăng ký nào' }]);
-    ws2['!cols'] = [{ wch: 22 }, { wch: 22 }, { wch: 14 }, { wch: 22 }];
+    ws2['!cols'] = [{ wch: 14 }, { wch: 22 }, { wch: 14 }, { wch: 22 }, { wch: 22 }];
     XLSX.utils.book_append_sheet(wb, ws2, 'Chi tiết đăng ký');
 
     XLSX.writeFile(wb, `DangKyMentor_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -220,6 +225,13 @@ export default function AdminDashboard({ user, onLogout }) {
           </button>
         </nav>
 
+        <button className="ad-export-btn" onClick={exportExcel}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+            Xuất Excel
+          </button>
+          
         {/* Logout */}
         <div className="ad-sidebar-footer">
           <button className="ad-logout-btn" onClick={onLogout}>
@@ -396,7 +408,6 @@ export default function AdminDashboard({ user, onLogout }) {
                       <th>HỌ VÀ TÊN</th>
                       <th>MSSV</th>
                       <th>BIỆT DANH</th>
-                      <th>MẬT KHẨU</th>
                       <th>VAI TRÒ</th>
                       <th>THAO TÁC</th>
                     </tr>
@@ -408,9 +419,6 @@ export default function AdminDashboard({ user, onLogout }) {
                         <td className="td-name">{u.name || 'N/A'}</td>
                         <td className="td-mssv"><span className="mssv-badge">{u.username}</span></td>
                         <td className="td-nickname">@{u.username || '—'}</td>
-                        <td className="td-pass">
-                          <span className="pass-dots">••••••••</span>
-                        </td>
                         <td>
                           <span className={`ad-role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}`}>
                             {u.role === 'admin' ? 'Admin' : 'Thành viên'}
@@ -451,6 +459,7 @@ export default function AdminDashboard({ user, onLogout }) {
           mentor={editMentorTarget}
           onSave={handleSaveMentor}
           onClose={() => { setShowMentorModal(false); setEditMentorTarget(null); }}
+          onRegistrationDeleted={fetchMentorsData}
         />
       )}
 

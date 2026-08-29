@@ -236,13 +236,22 @@ export default function UserDashboard({ user, onLogout }) {
     setConfirmMentor(mentor)
   }
 
-  // Xác nhận → đăng ký
-  const handleConfirm = () => {
-    if (confirmMentor) {
-      setRegisteredId(confirmMentor.id)
-      setConfirmMentor(null)
+  // Xác nhận → đăng ký qua API
+  const handleConfirm = async () => {
+    if (!confirmMentor) return;
+    try {
+      await api.registerMentee(confirmMentor.id, user?.name || user?.username, user?.username);
+      setRegisteredId(confirmMentor.id);
+      setConfirmMentor(null);
+      // Refetch để cập nhật số lượng đăng ký thực tế
+      const data = await api.getMentors();
+      setMentors(data || []);
+    } catch (err) {
+      console.error('Đăng ký thất bại:', err);
+      setConfirmMentor(null);
     }
   }
+
 
   // Huỷ modal
   const handleCancelConfirm = () => {
