@@ -206,5 +206,17 @@ export const api = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Xoá đăng ký thất bại.');
     return data;
+  },
+
+  // 10. Check registration status (kiểm tra mentee đã đăng ký mentor nào chưa)
+  async checkRegistration(menteeId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/registrations/check/${menteeId}`);
+      const data = await res.json();
+      if (res.ok && data.success) return data; // { registered: bool, mentorId: string|null }
+      return { registered: false, mentorId: null };
+    } catch {
+      return { registered: false, mentorId: null };
+    }
   }
 };

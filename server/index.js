@@ -311,7 +311,25 @@ app.post('/api/mentors/:id/register', async (req, res) => {
   }
 });
 
-// 7. Delete Registration (xoá đăng ký của một mentee)
+// 7. Check Registration (kiểm tra mentee đã đăng ký mentor nào chưa)
+app.get('/api/registrations/check/:menteeId', async (req, res) => {
+  const { menteeId } = req.params;
+  try {
+    const [rows] = await pool.query(
+      'SELECT mentor_id FROM registrations WHERE mentee_id = ? LIMIT 1',
+      [menteeId]
+    );
+    if (rows.length > 0) {
+      return res.json({ success: true, registered: true, mentorId: rows[0].mentor_id });
+    }
+    return res.json({ success: true, registered: false, mentorId: null });
+  } catch (error) {
+    console.error('Check registration error:', error.message);
+    return res.status(500).json({ success: false, message: 'Lỗi khi kiểm tra đăng ký.', error: error.message });
+  }
+});
+
+// 8. Delete Registration (xoá đăng ký của một mentee)
 app.delete('/api/registrations/:id', async (req, res) => {
   const { id } = req.params;
   try {

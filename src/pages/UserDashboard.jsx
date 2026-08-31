@@ -217,18 +217,25 @@ export default function UserDashboard({ user, onLogout }) {
   const [confirmMentor, setConfirmMentor] = useState(null) // mentor đang chờ xác nhận
 
   useEffect(() => {
-    const fetchMentors = async () => {
+    const init = async () => {
       try {
         setLoading(true)
-        const data = await api.getMentors()
+        // Gọi song song: lấy danh sách mentor + kiểm tra trạng thái đăng ký của user
+        const [data, regStatus] = await Promise.all([
+          api.getMentors(),
+          user?.username ? api.checkRegistration(user.username) : Promise.resolve({ registered: false, mentorId: null })
+        ])
         setMentors(data || [])
+        if (regStatus.registered && regStatus.mentorId) {
+          setRegisteredId(regStatus.mentorId)
+        }
       } catch (err) {
-        console.error('Lỗi tải mentor:', err)
+        console.error('Lỗi tải dữ liệu:', err)
       } finally {
         setLoading(false)
       }
     }
-    fetchMentors()
+    init()
   }, [])
 
   // Mở modal xác nhận
