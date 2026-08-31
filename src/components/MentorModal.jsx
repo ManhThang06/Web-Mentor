@@ -41,7 +41,7 @@ export default function MentorModal({ mentor, onSave, onClose, onRegistrationDel
   const TRACK_OPTIONS = [
     'Mạng máy tính',
     'Lập trình ứng dụng',
-    'Giải thuật & lập trình',
+    'Lập trình & giải thuật',
   ];
 
   const validate = () => {
