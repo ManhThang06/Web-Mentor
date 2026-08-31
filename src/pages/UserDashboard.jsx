@@ -313,7 +313,7 @@ export default function UserDashboard({ user, onLogout }) {
         <div className="ud-hero-content">
           <h1 className="ud-hero-title">Chọn Mentor của bạn</h1>
           <p className="ud-hero-desc">
-            Mỗi thành viên được đăng ký <strong>tối đa 1 mentor</strong>. Hãy chọn người phù hợp với định hướng và sở thích của bạn.
+            Mỗi thành viên được đăng ký <strong>tối đa 1 mentor</strong>. Hãy chọn người phù hợp với định hướng của bạn.
           </p>
           <div className="ud-search-wrap">
             <span className="ud-search-icon">🔍</span>

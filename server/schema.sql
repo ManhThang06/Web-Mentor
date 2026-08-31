@@ -41,27 +41,5 @@ CREATE TABLE IF NOT EXISTS registrations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
--- SAMPLE SEED DATA
+-- SAMPLE SEED DATA (đã xoá — database khởi động sạch)
 -- ============================================================
-
--- Chèn tài khoản Admin mặc định & Thành viên mẫu
-INSERT INTO users (name, username, password, role)
-VALUES 
-('Nguyễn Mạnh Thắng', '52400036', '$2b$10$a64yuRl4JQH/mtYUD0kVne1IzxgRPo/4O.eKWnoDXoTkhGdvwoi8K', 'admin'),
-('Trần Thị Minh Anh', '52000123', '$2b$10$PRN7QLU9KuWAUnsenbQIO./giGl1ZbIYJ0GUhEcz1lHIEkOFymuqa', 'user'),
-('Lê Văn Nam', '52000456', '$2b$10$benlsfEWpEZOUzId6zbx2utKEuzbZcm56EtJ0wWzeYgju/87YgARG', 'user')
-ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = VALUES(role);
-
--- Chèn Mentor mẫu
-INSERT INTO mentors (id, nickname, major, track, hobbies, max_slots, facebook_url)
-VALUES 
-('m-1', 'Thắng Nguyễn', 'Khoa học Máy tính', 'Giải thuật & lập trình', 'Lập trình, Đọc sách, Đá bóng', 5, 'https://facebook.com'),
-('m-2', 'Minh Anh', 'Kỹ thuật Phần mềm', 'Lập trình ứng dụng', 'Thiết kế UI/UX, Nghe nhạc', 3, 'https://facebook.com')
-ON DUPLICATE KEY UPDATE nickname = VALUES(nickname), major = VALUES(major), track = VALUES(track);
-
--- Chèn Đăng ký mẫu
-INSERT INTO registrations (mentor_id, mentee_name, mentee_id, registered_at)
-VALUES 
-('m-1', 'Nguyễn Văn A', '52000001', NOW()),
-('m-1', 'Trần Thị B', '52000002', NOW())
-ON DUPLICATE KEY UPDATE mentee_name = VALUES(mentee_name);

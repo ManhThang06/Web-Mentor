@@ -16,7 +16,7 @@ export default function MentorModal({ mentor, onSave, onClose, onRegistrationDel
     major: mentor?.major || '',
     track: mentor?.track || '',
     hobbies: mentor?.hobbies || '',
-    maxSlots: mentor?.maxSlots || 5,
+    maxSlots: mentor?.maxSlots ?? 10,
     avatar: mentor?.avatar || '',
   });
   const [preview, setPreview] = useState(mentor?.avatar || '');
