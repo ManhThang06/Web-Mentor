@@ -14,24 +14,33 @@ const dbConfig = {
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   port: parseInt(process.env.DB_PORT || '3306', 10),
-  multipleStatements: true
+  multipleStatements: false
 };
 
 const dbName = process.env.DB_NAME || 'web_mentor';
 
 const pool = mysql.createPool({
-  ...dbConfig,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  port: parseInt(process.env.DB_PORT || '3306', 10),
   database: dbName,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
+  // multipleStatements: false (mặc định - an toàn hơn cho production)
 });
+
 
 // Auto-test and initialize database on startup
 (async () => {
   try {
     // 1. Check root connection & auto-create database if not exists
-    const rootConnection = await mysql.createConnection(dbConfig);
+    // Bật multipleStatements: true chỉ cho kết nối khởi tạo để có thể chạy toàn bộ schema.sql
+    const rootConnection = await mysql.createConnection({
+      ...dbConfig,
+      multipleStatements: true
+    });
     await rootConnection.query(
       `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
     );

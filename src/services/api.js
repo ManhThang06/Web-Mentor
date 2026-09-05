@@ -1,5 +1,8 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+// Dùng biến môi trường VITE_API_URL khi deploy, fallback về localhost khi dev
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const LOCAL_STORAGE_KEY = 'icon_mentors';
+const SESSION_KEY = 'icon_session';
 
 // Local storage fallback helpers
 const getLocalMentors = () => {
@@ -7,6 +10,20 @@ const getLocalMentors = () => {
   catch { return []; }
 };
 const setLocalMentors = (data) => localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+
+// Get auth headers with JWT token
+const getAuthHeaders = () => {
+  const headers = { 'Content-Type': 'application/json' };
+  try {
+    const session = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    if (session?.token) {
+      headers['Authorization'] = `Bearer ${session.token}`;
+    }
+  } catch (e) {
+    // ignore
+  }
+  return headers;
+};
 
 export const api = {
   // 1. Auth Login
@@ -21,10 +38,7 @@ export const api = {
       if (!res.ok) throw new Error(data.message || 'Đăng nhập thất bại.');
       return data;
     } catch (err) {
-      console.warn('Backend server connection failed, falling back to local verification:', err.message);
-      if (username.trim() === '52400036' && password === 'TDTU036') {
-        return { success: true, user: { username: '52400036', role: 'admin' } };
-      }
+      console.error('Lỗi đăng nhập:', err.message);
       throw err;
     }
   },
@@ -50,7 +64,7 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/mentors`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(mentor)
       });
       const data = await res.json();
@@ -79,7 +93,8 @@ export const api = {
   async deleteMentor(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/mentors/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Xoá mentor thất bại.');
@@ -148,7 +163,7 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(user)
       });
       const data = await res.json();
@@ -184,7 +199,8 @@ export const api = {
   async deleteUser(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/users/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Xoá thành viên thất bại.');

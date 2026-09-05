@@ -51,7 +51,7 @@
 }
 
 .ud-confirm-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 20px;
   font-weight: 700;
   color: #1e2864;
@@ -147,7 +147,7 @@
   background: #f8fafc;
   color: #475569;
   font-size: 14px;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
@@ -166,8 +166,8 @@
   background: linear-gradient(90deg, #1e2864, #3d60c4);
   color: #fff;
   font-size: 14px;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
+  font-family: inherit;
+  font-weight: 600;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.12s;
 }
@@ -193,7 +193,9 @@
 .ud-page {
   min-height: 100vh;
   background: #f0f5fd;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ---- Header / Nav ---- */
@@ -227,16 +229,16 @@
 }
 
 .ud-header-title {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 800;
+  font-family: inherit;
+  font-weight: 700;
   font-size: 17px;
   color: #fff;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .ud-header-subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 2px;
   font-weight: 400;
 }
@@ -254,7 +256,7 @@
   padding: 5px 14px;
   font-size: 13px;
   color: #ddeaf9;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-weight: 600;
 }
 
@@ -280,10 +282,10 @@
   border-radius: 10px;
   padding: 7px 16px;
   font-size: 13.5px;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-weight: 600;
   cursor: pointer;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.1px;
   transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
   box-shadow: 0 0 0 0 rgba(231, 40, 40, 0);
 }
@@ -325,26 +327,26 @@
 .ud-hero-label {
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.65);
   text-transform: uppercase;
   margin-bottom: 10px;
 }
 
 .ud-hero-title {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 800;
-  font-size: clamp(26px, 4vw, 38px);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: clamp(24px, 3.5vw, 34px);
   color: #fff;
-  line-height: 1.2;
+  line-height: 1.25;
   margin-bottom: 12px;
 }
 
 .ud-hero-desc {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.8);
   max-width: 480px;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .ud-hero-desc strong {
@@ -374,7 +376,7 @@
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
   font-size: 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   outline: none;
   backdrop-filter: blur(8px);
   box-sizing: border-box;
@@ -401,7 +403,7 @@
   font-weight: 600;
   color: #8ca0c8;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   margin-bottom: 12px;
 }
 
@@ -414,7 +416,7 @@
 .ud-chip {
   padding: 8px 18px;
   border-radius: 99px;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 13.5px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -429,7 +431,7 @@
   border: none;
   background: linear-gradient(90deg, #1e2864, #3d60c4);
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
   box-shadow: 0 3px 12px rgba(61, 96, 196, 0.28);
 }
 
@@ -444,7 +446,7 @@
 .ud-results-count {
   font-size: 14px;
   color: #5a6e9a;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
 }
 
 .ud-results-count strong {
@@ -454,7 +456,7 @@
 .ud-legend {
   font-size: 12px;
   color: #aab8d4;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -488,8 +490,8 @@
   text-align: center;
   padding: 60px 0;
   color: #aab8d4;
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
+  font-family: inherit;
+  font-size: 15px;
 }
 
 /* ---- Mentor Card ---- */
@@ -497,21 +499,235 @@
   background: #fff;
   border-radius: 18px;
   border: 1.5px solid #ddeaf9;
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
   box-shadow: 0 2px 12px 0 rgba(30, 40, 100, 0.06);
+  z-index: 1;
 }
 
 .ud-card:hover {
-  box-shadow: 0 8px 32px 0 rgba(30, 40, 100, 0.14);
+  box-shadow: 0 10px 32px 0 rgba(30, 40, 100, 0.16);
   transform: translateY(-3px);
+  z-index: 35;
 }
 
 .ud-card-strip {
   height: 6px;
   background: linear-gradient(90deg, #1e2864, #3d60c4);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* ---- Mentee Tooltip (Hiện khi di chuột vào ô Mentor) ---- */
+.ud-mentee-tooltip {
+  position: absolute;
+  left: 50%;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 18px 45px rgba(15, 23, 60, 0.22), 0 4px 14px rgba(15, 23, 60, 0.08);
+  border: 1px solid #d4e3f8;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+  z-index: 100;
+  cursor: default;
+}
+
+.ud-card:hover .ud-mentee-tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Vị trí phía trên */
+.ud-mentee-tooltip--top {
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%) translateY(8px);
+}
+
+.ud-card:hover .ud-mentee-tooltip--top {
+  transform: translateX(-50%) translateY(0);
+}
+
+.ud-mentee-tooltip--top::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: #ffffff transparent transparent transparent;
+  filter: drop-shadow(0 2px 2px rgba(15, 25, 65, 0.08));
+}
+
+/* Vị trí phía dưới (khi card gần đỉnh màn hình) */
+.ud-mentee-tooltip--bottom {
+  top: calc(100% + 12px);
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.ud-card:hover .ud-mentee-tooltip--bottom {
+  transform: translateX(-50%) translateY(0);
+}
+
+.ud-mentee-tooltip--bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent transparent #ffffff transparent;
+  filter: drop-shadow(0 -2px 2px rgba(15, 25, 65, 0.08));
+}
+
+/* Header tooltip */
+.ud-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #f8faff 0%, #edf4fe 100%);
+  border-bottom: 1px solid #dde7f6;
+  border-top-left-radius: 13px;
+  border-top-right-radius: 13px;
+}
+
+.ud-tooltip-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e2864;
+}
+
+.ud-tooltip-title svg {
+  color: #3d60c4;
+}
+
+.ud-tooltip-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: #3d60c4;
+  color: #ffffff;
+}
+
+/* Body tooltip */
+.ud-tooltip-body {
+  padding: 8px 10px 10px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ud-tooltip-body::-webkit-scrollbar {
+  width: 4px;
+}
+.ud-tooltip-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Empty state */
+.ud-tooltip-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 8px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Danh sách Mentee */
+.ud-tooltip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ud-tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ud-tooltip-item:hover {
+  background: #f0f6ff;
+  border-color: #dbeafe;
+}
+
+.ud-tooltip-index {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 10.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ud-tooltip-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.ud-tooltip-item-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ud-tooltip-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ud-tooltip-mssv {
+  font-size: 11px;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+}
+
+.ud-tooltip-mssv strong {
+  font-weight: 700;
+}
+
+.ud-slots-hint {
+  font-size: 10.5px;
+  color: #7b94c4;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .ud-card-body {
@@ -553,18 +769,18 @@
 }
 
 .ud-card-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-weight: 700;
   font-size: 15px;
   color: #1e2864;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .ud-card-major-badge {
   margin-top: 4px;
   display: inline-block;
   font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-weight: 500;
   color: #3d60c4;
   background: #ddeaf9;
@@ -575,7 +791,7 @@
 /* Section label */
 .ud-section-label {
   font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   color: #8ca0c8;
   font-weight: 500;
   text-transform: uppercase;
@@ -585,7 +801,7 @@
 
 .ud-card-direction {
   font-size: 13.5px;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-weight: 600;
   color: #1e2864;
 }
@@ -599,7 +815,7 @@
 
 .ud-tag {
   font-size: 11.5px;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-weight: 500;
   color: #3d60c4;
   background: rgba(61, 96, 196, 0.08);
@@ -621,7 +837,7 @@
 
 .ud-slots-label {
   font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   color: #8ca0c8;
   font-weight: 500;
   text-transform: uppercase;
@@ -630,7 +846,7 @@
 
 .ud-slots-count {
   font-size: 13px;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-weight: 700;
 }
 
@@ -645,7 +861,7 @@
 .ud-slots-full-msg {
   font-size: 11px;
   color: #e05252;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   margin-top: 4px;
   font-weight: 500;
 }
@@ -674,8 +890,8 @@
   width: 100%;
   padding: 10px 0;
   border-radius: 10px;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
+  font-family: inherit;
+  font-weight: 600;
   font-size: 14px;
   transition: all 0.18s ease;
   border: none;

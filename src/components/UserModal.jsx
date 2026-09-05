@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 export default function UserModal({ show, onClose, onSave, editUser }) {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('user');
   const [error, setError] = useState('');
 
@@ -11,11 +13,14 @@ export default function UserModal({ show, onClose, onSave, editUser }) {
       setName(editUser.name || '');
       setUsername(editUser.username || '');
       setRole(editUser.role || 'user');
+      setPassword('');
     } else {
       setName('');
       setUsername('');
+      setPassword('');
       setRole('user');
     }
+    setShowPassword(false);
     setError('');
   }, [editUser, show]);
 
@@ -25,13 +30,22 @@ export default function UserModal({ show, onClose, onSave, editUser }) {
     e.preventDefault();
     if (!name.trim()) { setError('Vui lòng nhập Họ và tên thành viên.'); return; }
     if (!username.trim()) { setError('Vui lòng nhập MSSV (tài khoản).'); return; }
+    if (!editUser && !password.trim()) { setError('Vui lòng nhập mật khẩu cho thành viên mới.'); return; }
+    if (password && password.length < 6) { setError('Mật khẩu phải có ít nhất 6 ký tự.'); return; }
 
-    onSave({
+    const payload = {
       id: editUser?.id || null,
       name: name.trim(),
       username: username.trim(),
-      role: role
-    });
+      role: role,
+    };
+
+    // Chỉ gửi password nếu có nhập
+    if (password.trim()) {
+      payload.password = password.trim();
+    }
+
+    onSave(payload);
   };
 
   return (
@@ -86,7 +100,57 @@ export default function UserModal({ show, onClose, onSave, editUser }) {
               />
             </div>
 
-
+            {/* Mật khẩu */}
+            <div className="form-group">
+              <label className="modal-label" htmlFor="user-password">
+                Mật khẩu {!editUser && <span className="req">*</span>}
+                {editUser && <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '12px' }}> (để trống nếu không đổi)</span>}
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="user-password"
+                  className="modal-input"
+                  placeholder={editUser ? 'Nhập mật khẩu mới (tuỳ chọn)' : 'Nhập mật khẩu cho thành viên'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ paddingRight: '44px' }}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#94a3b8',
+                    padding: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
 
             {/* Vai trò */}
             <div className="form-group">

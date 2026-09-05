@@ -40,6 +40,3 @@ CREATE TABLE IF NOT EXISTS registrations (
     FOREIGN KEY (mentor_id) REFERENCES mentors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================
--- SAMPLE SEED DATA (đã xoá — database khởi động sạch)
--- ============================================================

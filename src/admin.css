@@ -2,14 +2,16 @@
    Admin Dashboard — Redesign (Sidebar Layout)
    ════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ── Root Layout ── */
 .ad-layout {
   display: flex;
   min-height: 100vh;
   background: #eef1f6;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ════════════════════════════════════════
@@ -63,7 +65,7 @@
 }
 
 .ad-logo-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   color: #fff;
@@ -190,9 +192,9 @@
 }
 
 .ad-page-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 26px;
-  font-weight: 800;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 700;
   color: #1a202c;
   margin: 0 0 2px;
 }
@@ -219,7 +221,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   transition: background 0.2s, box-shadow 0.2s;
   white-space: nowrap;
 }
@@ -343,8 +345,8 @@
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
+  font-family: inherit;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
 }
@@ -362,7 +364,7 @@
 }
 
 .amc-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   color: #1a202c;
@@ -537,9 +539,9 @@
 }
 
 td.td-mssv {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: #2563eb;
 }
 
@@ -549,9 +551,9 @@ td.td-mssv {
   color: #2563eb;
   border-radius: 5px;
   padding: 2px 8px;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .td-nickname {
@@ -747,8 +749,8 @@ td.td-mssv {
 .mentee-avatar-initials {
   color: #fff;
   font-size: 14px;
-  font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-family: inherit;
 }
 .mentee-info {
   flex: 1;
@@ -847,8 +849,8 @@ td.td-mssv {
 }
 
 .modal-header h3 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 17px;
+  font-family: inherit;
+  font-size: 16px;
   font-weight: 700;
   color: #1e293b;
 }
@@ -1012,7 +1014,7 @@ td.td-mssv {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   transition: background 0.18s;
 }
 .btn-save:hover { background: #115da7; }
@@ -1036,7 +1038,7 @@ td.td-mssv {
 }
 
 .confirm-card h4 {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 18px;
   font-weight: 700;
   color: #1e293b;
@@ -1060,7 +1062,7 @@ td.td-mssv {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.18s;
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
 }
 .btn-delete-confirm:hover { background: #dc2626; }
 
@@ -1169,8 +1171,8 @@ td.td-mssv {
 .stat-card:nth-child(2) { border-left-color: #0f52ba; }
 .stat-card:nth-child(3) { border-left-color: #10b981; }
 .stat-value {
-  font-family: 'Outfit', sans-serif;
-  font-size: 32px;
+  font-family: inherit;
+  font-size: 30px;
   font-weight: 700;
   color: #1e293b;
   line-height: 1;

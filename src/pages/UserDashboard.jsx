@@ -5,7 +5,7 @@ import { api } from '../services/api'
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23e2e8f0'/%3E%3Ccircle cx='40' cy='32' r='14' fill='%2394a3b8'/%3E%3Cellipse cx='40' cy='68' rx='22' ry='14' fill='%2394a3b8'/%3E%3C/svg%3E"
 
-const TRACK_OPTIONS = ['Tất cả', 'Mạng máy tính', 'Lập trình ứng dụng', 'Giải thuật & lập trình']
+const TRACK_OPTIONS = ['Tất cả', 'Mạng máy tính', 'Lập trình ứng dụng', 'Lập trình & giải thuật']
 
 /* ──────────────────────────────────────
    Modal xác nhận đăng ký với countdown
@@ -117,7 +117,23 @@ function ProgressBar({ value, max }) {
    Mentor Card
 ────────────────────────────────────── */
 function MentorCard({ mentor, onRequestRegister, registered, anyRegistered }) {
-  const registered_count = mentor.registrations ? mentor.registrations.length : 0
+  const [tooltipPos, setTooltipPos] = useState('top')
+  const cardRef = useRef(null)
+
+  const handleMouseEnter = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect()
+      // Nếu gần mép trên viewport (< 240px) thì mở tooltip hướng xuống dưới
+      if (rect.top < 240) {
+        setTooltipPos('bottom')
+      } else {
+        setTooltipPos('top')
+      }
+    }
+  }
+
+  const regs = mentor.registrations || []
+  const registered_count = regs.length
   const max = mentor.max_slots || mentor.maxSlots || 5
   const full = registered_count >= max
   const statusColor = full ? '#e05252' : registered_count / max >= 0.75 ? '#e0943a' : '#22a663'
@@ -135,7 +151,55 @@ function MentorCard({ mentor, onRequestRegister, registered, anyRegistered }) {
     : []
 
   return (
-    <div className={`ud-card ${registered ? 'ud-card--registered' : ''}`}>
+    <div
+      ref={cardRef}
+      onMouseEnter={handleMouseEnter}
+      className={`ud-card ${registered ? 'ud-card--registered' : ''}`}
+    >
+      {/* Tooltip danh sách mentee khi rê chuột vào ô mentor */}
+      <div className={`ud-mentee-tooltip ud-mentee-tooltip--${tooltipPos}`}>
+        <div className="ud-tooltip-header">
+          <div className="ud-tooltip-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Mentee đã đăng ký</span>
+          </div>
+          <span className="ud-tooltip-badge">
+            {registered_count}/{max}
+          </span>
+        </div>
+
+        <div className="ud-tooltip-body">
+          {regs.length === 0 ? (
+            <div className="ud-tooltip-empty">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>Chưa có mentee nào đăng ký</span>
+            </div>
+          ) : (
+            <div className="ud-tooltip-list">
+              {regs.map((r, idx) => {
+                const menteeName = r.menteeName || r.mentee_name || 'Thành viên'
+                const menteeMssv = r.menteeId || r.mentee_id || '—'
+                return (
+                  <div key={r.id || idx} className="ud-tooltip-item">
+                    <div className="ud-tooltip-index">{idx + 1}</div>
+                    <div className="ud-tooltip-item-details">
+                      <div className="ud-tooltip-item-name">{menteeName}</div>
+                      <div className="ud-tooltip-item-meta">
+                        <span className="ud-tooltip-mssv">MSSV: <strong>{menteeMssv}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="ud-card-strip" />
 
       <div className="ud-card-body">
@@ -176,7 +240,9 @@ function MentorCard({ mentor, onRequestRegister, registered, anyRegistered }) {
         {/* Slots */}
         <div className="ud-slots">
           <div className="ud-slots-row">
-            <span className="ud-slots-label">Đăng ký</span>
+            <span className="ud-slots-label">
+              Đăng ký
+            </span>
             <span className={`ud-slots-count ${full ? 'ud-slots-count--full' : 'ud-slots-count--normal'}`}>
               {registered_count}
               <span className="ud-slots-max">/{max}</span>

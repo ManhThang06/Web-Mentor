@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import pool from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,6 +18,37 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+const JWT_SECRET = process.env.JWT_SECRET || 'web_mentor_secret_key_12345';
+
+// Rate limiter for login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login requests per windowMs
+  message: { success: false, message: 'Đăng nhập quá nhiều lần. Vui lòng thử lại sau 15 phút.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Admin JWT Middleware
+const verifyAdmin = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, message: 'Yêu cầu xác thực.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Quyền truy cập bị từ chối.' });
+    }
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ success: false, message: 'Token không hợp lệ hoặc đã hết hạn.' });
+  }
+};
 
 // 0. Welcome & Server Status page
 app.get('/', (req, res) => {
@@ -44,7 +77,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // 2. Auth Login API
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -61,9 +94,16 @@ app.post('/api/auth/login', async (req, res) => {
       const user = users[0];
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
+        // Generate JWT
+        const token = jwt.sign(
+          { id: user.id, username: user.username, role: user.role },
+          JWT_SECRET,
+          { expiresIn: '1d' }
+        );
+
         return res.json({
           success: true,
-          user: { id: user.id, name: user.name || user.username, username: user.username, role: user.role }
+          user: { id: user.id, name: user.name || user.username, username: user.username, role: user.role, token }
         });
       }
     }
@@ -120,10 +160,10 @@ app.put('/api/users/:id/password', async (req, res) => {
   }
 });
 
-// 2.1. Get All Users (Quản lý thành viên)
+// 2.1. Get All Users (Quản lý thành viên) — không trả về password hash
 app.get('/api/users', async (req, res) => {
   try {
-    const [users] = await pool.query('SELECT id, name, username, password, role, created_at FROM users ORDER BY id DESC');
+    const [users] = await pool.query('SELECT id, name, username, role, created_at FROM users ORDER BY id DESC');
     res.json({ success: true, users });
   } catch (error) {
     console.error('Get users error:', error.message);
@@ -132,7 +172,7 @@ app.get('/api/users', async (req, res) => {
 });
 
 // 2.2. Create or Update User
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', verifyAdmin, async (req, res) => {
   const { id, name, username, password, role } = req.body;
 
   if (!username || !name) {
@@ -188,7 +228,7 @@ app.post('/api/users', async (req, res) => {
 });
 
 // 2.3. Delete User
-app.delete('/api/users/:id', async (req, res) => {
+app.delete('/api/users/:id', verifyAdmin, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -238,7 +278,7 @@ app.get('/api/mentors', async (req, res) => {
 });
 
 // 4. Create or Update Mentor API
-app.post('/api/mentors', async (req, res) => {
+app.post('/api/mentors', verifyAdmin, async (req, res) => {
   const { id, nickname, mssv, major, track, hobbies, maxSlots, avatar, facebookUrl } = req.body;
 
   if (!nickname || !major) {
@@ -275,7 +315,7 @@ app.post('/api/mentors', async (req, res) => {
 });
 
 // 5. Delete Mentor API
-app.delete('/api/mentors/:id', async (req, res) => {
+app.delete('/api/mentors/:id', verifyAdmin, async (req, res) => {
   const { id } = req.params;
 
   try {
